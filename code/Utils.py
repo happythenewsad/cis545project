@@ -2,7 +2,7 @@ import spacy
 import nltk
 from nltk.corpus import stopwords
 import functools as fn
-
+from nltk.stem.porter import PorterStemmer
 
 
 class Utils:
@@ -19,11 +19,12 @@ class Utils:
         return nulls_dict
             
     @staticmethod
-    def stem_n_stop(text, spacy):
+    def stem_n_stop(text, spacy, stemmer):
         wordlist = []
         tokens = spacy(text)
         for token in tokens:
-            wordlist.append(token.text)
+            wordlist.append(stemmer.stem(token.text))
         return wordlist
-        # nlp = spacy.load('en_core_web_sm')
-        # doc = nlp(u'Apple is looking at buying U.K. startup for $1 billion')
+
+
+
