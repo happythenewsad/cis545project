@@ -10,7 +10,7 @@ class Tester(unittest.TestCase):
         spacy_model = spacy.load('en_core_web_sm')
         text = "the quick brown fox!"
         result = Extract.feats(text, spacy_model)
-        expected = {'sent_len': 20, 'NOUN': 1, 'NOUN_count': 1, 
+        expected = {'sent_len': 20, 'NOUN_count': 1, 
           'ADV_count': 0, 'VERB_count': 0, 'ADJ_count': 2, 
           'PUNCT_count': 1, 'adv_verb_ratio': 0, 
           'adj_noun_ratio': 0.5, 'DET_count': 1,

@@ -1,4 +1,5 @@
-
+import spacy
+import pandas as pd
 
 class Extract:
 # vectorizer = DictVectorizer()
@@ -19,14 +20,12 @@ class Extract:
         return punc_dict
 
     @staticmethod
-    # can just pass in row rather than whole df + index
-    def feats(text, spacy):
+    def feats(txt, spacy, seq_up_to=None, feat_whitelist=None):
         feature_dict = {}
         pos_dict = {'NOUN_count': 0, 'ADV_count': 0, 'VERB_count': 0, 
                     'ADJ_count': 0, 'adv_verb_ratio': 0, 'adj_noun_ratio': 0
                    }
-        txt = text#str(raw[row_idx][raw_text_col])
-        
+    
         feature_dict['sent_len'] = len(txt)
         
         try:
@@ -42,10 +41,11 @@ class Extract:
             pos_dict[pos+'_count'] = pos_dict.get(pos+'_count', 0) + 1
             if pos == 'NOUN' or pos == 'VERB' or pos == 'CCONJ':
                 pos_sequence.append(pos)
-                
-        pos_sequence = pos_sequence[:7] # shortening the num of features to reasonable
-        pos_sequence_name = "_".join(pos_sequence)
-        feature_dict[pos_sequence_name] = 1
+          
+        if seq_up_to:
+            pos_sequence = pos_sequence[:seq_up_to] # shortening the num of features to reasonable
+            pos_sequence_name = "_".join(pos_sequence)
+            feature_dict[pos_sequence_name] = 1
 
 
         if pos_dict['NOUN_count'] == 0 or pos_dict['ADJ_count'] == 0:
@@ -60,9 +60,24 @@ class Extract:
             
         feature_dict.update(pos_dict)
         feature_dict.update(Extract.punc_feats(txt))
-        
+
+        # removes features not in whitelist
+        if feat_whitelist != None:
+            for key in feature_dict.keys():
+                if not key in feat_whitelist:
+                    feature_dict.pop(key, None)
+                    print("popping ", key)
 
         return feature_dict
+
+    @staticmethod
+    def gram_feats(text_series, feat_whitelist=None):
+        spacy_model = spacy.load('en_core_web_sm')
+        features = []
+        for _,text in enumerate(text_series):
+            features.append(Extract.feats(text, spacy_model, None, feat_whitelist))
+        gram_feats_df = pd.DataFrame(features)
+        return gram_feats_df
 
 
     # for row_idx,_ in enumerate(raw):
