@@ -1,5 +1,6 @@
 import spacy
 import nltk
+import re
 from nltk.corpus import stopwords
 import functools as fn
 import pickle
@@ -10,16 +11,19 @@ from sklearn.feature_extraction import DictVectorizer
 class Utils:
 
     @staticmethod
+    # imitates sklearn's TFIDFVectorizer algorithm
     def tokenize(sentence):
-        return sentence.split(' ')
+        tokens = re.split('\W+', sentence)
+        tokens = [x.lower() for x in tokens]
+        return list(filter(lambda x: len(x) > 1, tokens))
 
+    # assumes all input already downcased
     @staticmethod
     def build_lexicon(sents):
         lex = {}
         for sent in sents:
             words = Utils.tokenize(sent)
             for word in words:
-                word = word.lower()
                 if word in lex:
                     lex[word] = lex[word] + 1
                 else:

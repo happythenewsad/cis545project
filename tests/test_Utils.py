@@ -7,8 +7,14 @@ from Utils import Utils
 
 
 class Tester(unittest.TestCase):
-    def test_test(self):
-        self.assertEqual(False, False)
+    def test_tokenize(self):
+        inp = 'Words, words, words.'
+        expected = ['words', 'words', 'words']
+        self.assertEqual(Utils.tokenize(inp), expected)
+
+        inp = 'why? just because; i said.'
+        expected = ['why', 'just', 'because', 'said']
+        self.assertEqual(Utils.tokenize(inp), expected)
 
     def test_stem_n_stop(self):
         stemmer = PorterStemmer()
