@@ -12,4 +12,19 @@ SVM classifier can act as a validation signal on the preprocessing. we will try 
 
 Results:
 
-tfidf only, accuracy, svm: Accuracy:  0.8421052631578947
+tfidf only, 100 feats, svm: Accuracy:  0.8212461695607763
+
+tfidf + 23 grammar, svm: Accuracy:  0.54902962206333
+
+just 23 grammar: Accuracy:  0.4034729315628192
+
+23 grammar + 7ary sequences:
+  Accuracy:  0.3958120531154239
+  number of seq features: 1600
+
+sequences
+  analogous to heart patterns, except not human engineered (get citation)
+
+pretty poor results for grammatical. let's look at where it's getting wrong, and look at how the author distributions are different
+
+

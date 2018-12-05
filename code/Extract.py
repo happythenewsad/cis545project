@@ -22,6 +22,10 @@ class Extract:
     @staticmethod
     def feats(txt, spacy, seq_up_to=None, feat_whitelist=None):
         feature_dict = {}
+        if feat_whitelist != None:
+            for f in feat_whitelist:
+                feature_dict[f] = 0
+                
         pos_dict = {'NOUN_count': 0, 'ADV_count': 0, 'VERB_count': 0, 
                     'ADJ_count': 0, 'adv_verb_ratio': 0, 'adj_noun_ratio': 0
                    }
@@ -63,19 +67,18 @@ class Extract:
 
         # removes features not in whitelist
         if feat_whitelist != None:
-            for key in feature_dict.keys():
+            for key in list(feature_dict.keys()):
                 if not key in feat_whitelist:
                     feature_dict.pop(key, None)
-                    print("popping ", key)
 
         return feature_dict
 
     @staticmethod
-    def gram_feats(text_series, feat_whitelist=None):
+    def gram_feats(text_series, feat_whitelist=None, seq_up_to=None):
         spacy_model = spacy.load('en_core_web_sm')
         features = []
         for _,text in enumerate(text_series):
-            features.append(Extract.feats(text, spacy_model, None, feat_whitelist))
+            features.append(Extract.feats(text, spacy_model, seq_up_to, feat_whitelist))
         gram_feats_df = pd.DataFrame(features)
         return gram_feats_df
 
