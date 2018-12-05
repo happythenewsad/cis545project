@@ -28,3 +28,6 @@ sequences
 pretty poor results for grammatical. let's look at where it's getting wrong, and look at how the author distributions are different
 
 
+could just punt and let the NN try to use all features correctly
+
+
