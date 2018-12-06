@@ -25,7 +25,7 @@ class Extract:
         if feat_whitelist != None:
             for f in feat_whitelist:
                 feature_dict[f] = 0
-                
+
         pos_dict = {'NOUN_count': 0, 'ADV_count': 0, 'VERB_count': 0, 
                     'ADJ_count': 0, 'adv_verb_ratio': 0, 'adj_noun_ratio': 0
                    }
@@ -73,6 +73,7 @@ class Extract:
 
         return feature_dict
 
+    # convenience wrapper for feats()
     @staticmethod
     def gram_feats(text_series, feat_whitelist=None, seq_up_to=None):
         spacy_model = spacy.load('en_core_web_sm')
@@ -83,8 +84,4 @@ class Extract:
         return gram_feats_df
 
 
-    # for row_idx,_ in enumerate(raw):
-    #     features.append(extract_feats(row_idx, raw))
-
-    # X = vectorizer.fit_transform(features)
 
