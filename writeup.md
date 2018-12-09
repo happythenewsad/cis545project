@@ -24,6 +24,10 @@ Accuracy:  0.5648621041879469
   Accuracy:  0.3958120531154239
   number of seq features: 1600
 
+gensim only, 100ary: 
+Accuracy:  0.4473953013278856
+
+
 sequences
   analogous to heart patterns, except not human engineered (get citation)
 
