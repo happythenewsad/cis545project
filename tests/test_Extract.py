@@ -1,5 +1,6 @@
 import unittest
 import spacy
+import pandas as pd
 
 from Extract import Extract
 
@@ -19,3 +20,15 @@ class Tester(unittest.TestCase):
           'bang_count': 1}
 
         self.assertEqual(result, expected)
+
+    def test_gram_feats(self):
+        inp = {'foo': [0,0], 'bar': [1,2]}
+        test_df = pd.DataFrame(inp)
+        shape = test_df.shape
+        result = Extract.standardize(test_df)
+
+        self.assertEqual(result.shape, shape)
+        self.assertEqual(list(result.columns), ['bar', 'foo'])
+
+        self.assertEqual(result.iloc[0].foo, 0)
+        self.assertEqual(result.iloc[0].bar < result.iloc[1].bar, True)
