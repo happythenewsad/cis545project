@@ -73,6 +73,18 @@ class Extract:
 
         return feature_dict
 
+    @staticmethod
+    def standardize(df):
+        def xform(x, **kwargs):
+            return (x - avg) / stdv
+
+        for col in df.columns:
+            stdv = df[col].std()
+            avg = df[col].mean()
+            df[col] = df[col].apply(xform, avg=avg, stdv=stdv)
+            
+        return df.fillna(0)
+
     # convenience wrapper for feats()
     @staticmethod
     def gram_feats(text_series, feat_whitelist=None, seq_up_to=None):
@@ -80,7 +92,7 @@ class Extract:
         features = []
         for _,text in enumerate(text_series):
             features.append(Extract.feats(text, spacy_model, seq_up_to, feat_whitelist))
-        gram_feats_df = pd.DataFrame(features)
+        gram_feats_df = Extract.standardize(pd.DataFrame(features))
         return gram_feats_df
 
 
