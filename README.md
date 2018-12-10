@@ -21,10 +21,10 @@ System requirements
 package requirements:
 --------------------
 
-pip install nltk
-pip install spacy
-pip install gensim
-python3 -m spacy download en
+- pip install nltk
+- pip install spacy
+- pip install gensim
+- python3 -m spacy download en
 
 
 
