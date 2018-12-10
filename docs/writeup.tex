@@ -7,6 +7,8 @@
 \setlength{\parskip}{\baselineskip}
 
 \usepackage{amsmath,amsfonts,amssymb}
+\usepackage{hyperref}
+\usepackage[export]{adjustbox}
 
 \title{CIS 545 - Final Project}
 \author{Peter Kong}
@@ -59,18 +61,21 @@ According to convention, we split the training data into three sets:
 The only data wrangling necessary was a check for null values across all columns, which returned negative. We computed simple statistics across each column to check for oddities like empty sentences or out-of-vocabulary labels.
 
 
-\section{Exploration}
+\section{Exploration A}
 % Poe January 19, 1809 – October 7, 1849), boston
 % Shelley  30 August 1797 – 1 February 1851) London
 % Lovecraft (August 20, 1890 – March 15, 1937) rhode island
 
 Here are three examples of sentences from the three authors:
 
-mws: 'How lovely is spring As we looked from Windsor Terrace on the sixteen fertile counties spread beneath, speckled by happy cottages and wealthier towns, all looked as in former years, heart cheering and fair.'
+\begin{quote}mws: 'How lovely is spring As we looked from Windsor Terrace on the sixteen fertile counties spread beneath, speckled by happy cottages and wealthier towns, all looked as in former years, heart cheering and fair.'
+\end{quote}
 
-'It never once occurred to me that the fumbling might be a mere mistake.'
+\begin{quote}'It never once occurred to me that the fumbling might be a mere mistake.'
+\end{quote}
 
-'This process, however, afforded me no means of ascertaining the dimensions of my dungeon; as I might make its circuit, and return to the point whence I set out, without being aware of the fact; so perfectly uniform seemed the wall.'
+\begin{quote}'This process, however, afforded me no means of ascertaining the dimensions of my dungeon; as I might make its circuit, and return to the point whence I set out, without being aware of the fact; so perfectly uniform seemed the wall.'
+\end{quote}
 
 Can you attribute each passage? You probably cannot, unless you are intimately familiar with the books these sentences are drawn from. We needed to look at much more data to find meaninful patterns.
 
@@ -78,10 +83,76 @@ We first truncated the corpus slightly so that all three authors were equally we
 
 We used the \texttt{nltk} stopwords list across all experiments in this project, where appropriate.
 
-We wrote a simple tokenizer for this process, which splits on white space and standard punctuation. We ensured that our tokenizer imitated the behavior of sklearn's internal tokenizer, knowing we would probably use \texttt{sklearn.TFIDFVectorizer} later. The lexicon yielded 22847 unique tokens. Next, we generated author-specific lexicons to visualize relative word frequencies.
+We wrote a simple tokenizer for this process, which splits on white space and standard punctuation. We ensured that our tokenizer imitated the behavior of sklearn's internal tokenizer, knowing we would probably use \texttt{sklearn.TFIDFVectorizer} later. The lexicon yielded 22847 unique tokens. Next, we generated author-specific lexicons to visualize relative word frequencies:
+
+\includegraphics[scale=.45, center]{images/word_freq_mws.png}
+\vskip 0.2in
+\includegraphics[scale=.45, center]{images/word_freq_eap.png}
+\vskip 0.2in
+\includegraphics[scale=.45, center]{images/word_freq_hpl.png}
+\vskip 0.2in
+
+We see many commonalities - 'would', 'could', and 'man' are frequent across all authors - and many differences. This supports our intuition that word-based feature extraction techniques like TF-IDF vectorization and word embeddings will yield predictive power.
+
+We approached this task in an iterative fashion. This, we detour into feature extraction during our exploration phase.
+
+\section{Feature Extraction A}
+
+\subsection{TFIDF Vectorization}
+TFIDF vectorization is a process that converts a chunk of text into
+a fixed length set of wordwise features. Originally used for information retrieval tasks within search engines, TFIDF vectorization automatically weights words according to their relative importance (inverse document frequency) within the corpus, in theory privileging more meaningful words while ignoring noisy, common words.
+
+The \texttt{sklearn} implementation of TFIDF vectorization allows the user to artificially limit the vocabulary used in the process, either by whitelist or by word frequency. Reducing the vocabulary reduces the degrees of freedom within the eventual model, which may in turn reduce overfit.
+
+TFIDF vectorization is amenable to the authorship identification task because it outputs fixed length vectors for arbitrary input. One glaring shortcoming is that it can only find patterns in bags of words - it has no mechanism for observing patterns in word sequences.
+
+Through the gridsearch technique , we found that limiting feature count to 1500
+
+\subsection{Grammatical features}
+We extracted three groups of grammatical features: punctuation, parts-of-speech ratios, and parts of speech sequences.
+
+\begin{enumerate}
+  \item Punctuation is quite straightforward. For every input, we extract the frequencies of punctuation, one feature per symbol. We used the set 
+  \begin{quote} \{colon, semicolon, left parenthesis, ellipse, quote, exclamation point\}
+  \end{quote} 
+  We hypothesized that, since these symbols are used across a variety of domains (not just sci-fi fiction, or financial news, for example), they are likely to predict authorial style rather than content.
+  \item We used the \texttt{spacy} POS tagger to label every word in our training set with it's part-of-speech tag. There is a risk that the \texttt{spacy} tagger could introduce constant biases or innacuracies since it was trained on a different distribution of text. However, it's training dataset was large and diverse enough that we took the risk.
+  \\
+  \texttt{spacy} produces many different tags, including relatively rare ones like interjection. We limited degrees of freedom and focused on the two parts-of-speech ratios we hypothesized had the most descriminatory power across author corpora: in-sentence adjective-to-noun ratio and adverb-to-verb ratio.
+  \item So far we have only extracted bag-of-words features; we do not retain knowledge of word sequences. We created a set of sequence features by [Hearst], who in 1992 was able to leverage domain knowledge to extract semantic relationships from text using human-intuitive grammatical patterns with high accuracy. We generalize this approach by constructing one-hot POS sequence features. 
+
+  \begin{quote}
+  The fox and dog fought. \\
+  NOUN\_CCONJ\_NOUN\_VERB: 1\\
+  NOUN\_VERB\_NOUN\_VERB: 0\\
+  ...
+  \end{quote}
+
+  Notice in the example that we severely restrict the POS tags to NOUN, VERB, CCONJ to throttle the inherent exponential growth of sequence features. Through trial and error, we found that restricting the length of POS sequence vectors to 7 limited the number of features to a reasonable 1600 without a reduction in accuracy.
+\end{enumerate}
+
+\subsection{Gensim}
+We attempted to extract context-aware features a second way, through Gensim, a library that creates word2vec-style word embeddings. word2vec uses a neural network to express a given word as a vector describing its relation to neighboring words, motivated by the intuition that meaning can be recovered from a word's positional context. This technique has improved the accuracy of many NLP tasks [Mikolov]. Because we are operating at the sentence level, not word level, we used Gensim's doc2vec library, an expansion of the word2ve concept. We set vector size to 1500 to match our TFIDFVectorizer configuration.
+
+\subsection{Named Entity Recognition}
+Named Entity Recognition is a well-established research technique with high accuracy, depending on the data and domain. We ran spacy's NER extractor on our dataset. While we had hoped to find some signal from this feature set, this was the only technique we did not bother to include in our model training because of the poor results. Many sentences, like the one below, do not contain any named entities:
+
+\begin{quote}
+In whatever way the shifting is managed, it is of course concealed at every step from observation.
+\end{quote}
+
+In a basket of 1500 sentences randomly selected from our training data, we found that NER prevelence was too sparse to be helpful. Even if NER had had a better showing in our dataset, it risks predicting topic rather than author, and thus may reduce the portability of our models.
+
+\begin{quote}
+In-basket NER statistics:\\
+min: 0 \\
+max: 14 \\
+mean: 0.8 \\
+stdev: 1.2\\
+\end{quote}
 
 
-\section{Feature Engineering}
+\section{Exploration B}
 
 \section{Implementation}
 
@@ -100,6 +171,10 @@ asdf
 Bagnall https://www.uni-weimar.de/medien/webis/events/pan-16/pan16-papers-final/pan16-author-identification/bagnall16-notebook.pdf
 
 Brennan: https://www.aaai.org/ocs/index.php/IAAI/IAAI09/paper/viewFile/257/1017
+
+Hearst http://people.ischool.berkeley.edu/~hearst/papers/coling92.pdf
+
+Mikolov: https://arxiv.org/pdf/1301.3781.pdf
 
 \begin{table}[]
 \centering
