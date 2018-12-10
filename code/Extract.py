@@ -2,11 +2,6 @@ import spacy
 import pandas as pd
 
 class Extract:
-# vectorizer = DictVectorizer()
-    # features = []
-
-    # raw_text_col = 0
-    # LABEL_COL = -1
 
     @staticmethod
     def punc_feats(txt):
