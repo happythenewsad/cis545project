@@ -33,8 +33,6 @@ Many authors, with good or bad intentions, attempt to frustrate identification v
 Authorship identification and its analog tasks are studied heavily in academia. PAN, a digital forensics conference, holds an authorship identification-related task every year. 
 
 
-
-
 \section{Problem Description}
 The Spooky Author Identification task is hosted by Kaggle. It is a supervised learning problem. Training data is given as tuples of (text, label), where 'text' is a one-sentence excerpt from an author's corpus, and 'label' is one of Edgar Allen Poe, H. P. Lovecraft, and Mary Wollstonecraft Shelley.
 
@@ -63,10 +61,8 @@ According to convention, we split the training data into three sets:
 The only data wrangling necessary was a check for null values across all columns, which returned negative. We computed simple statistics across each column to check for oddities like empty sentences or out-of-vocabulary labels.
 
 
-\section{Exploration A}
-% Poe January 19, 1809 – October 7, 1849), boston
-% Shelley  30 August 1797 – 1 February 1851) London
-% Lovecraft (August 20, 1890 – March 15, 1937) rhode island
+\section{Preliminary Exploration}
+
 
 Here are three examples of sentences from the three authors:
 
@@ -87,18 +83,18 @@ We used the \texttt{nltk} stopwords list across all experiments in this project,
 
 We wrote a simple tokenizer for this process, which splits on white space and standard punctuation. We ensured that our tokenizer imitated the behavior of sklearn's internal tokenizer, knowing we would probably use \texttt{sklearn.TFIDFVectorizer} later. The lexicon yielded 22847 unique tokens. Next, we generated author-specific lexicons to visualize relative word frequencies:
 
-\includegraphics[scale=.45, center]{images/word_freq_mws.png}
+\includegraphics[scale=.40, center]{images/word_freq_mws.png}
 \vskip 0.2in
-\includegraphics[scale=.45, center]{images/word_freq_eap.png}
+\includegraphics[scale=.40, center]{images/word_freq_eap.png}
 \vskip 0.2in
-\includegraphics[scale=.45, center]{images/word_freq_hpl.png}
+\includegraphics[scale=.40, center]{images/word_freq_hpl.png}
 \vskip 0.2in
 
 We see many commonalities - 'would', 'could', and 'man' are frequent across all authors - and many differences. This supports our intuition that word-based feature extraction techniques like TF-IDF vectorization and word embeddings will yield predictive power.
 
 We approached this task in an iterative fashion. This, we detour into feature extraction during our exploration phase.
 
-\section{Feature Extraction A}
+\section{Feature Extraction}
 
 \subsection{TFIDF Vectorization}
 TFIDF vectorization is a process that converts a chunk of text into
@@ -155,9 +151,9 @@ stdev: 1.2\\
 
 
 \section{Intermediate results}
-We wanted to use neural network models to classify authorship, but first we used a simple linear classifier (\texttt{sklearn.LinearSVC}) as a way of quickly determining the value of our engineered features.
-
-\begin{table}[]
+We wanted to use neural network models to classify authorship, but first we used a simple linear classifier (\texttt{sklearn.LinearSVC}) as a way of quickly determining the value of our engineered features. (See Table 1)
+\vskip 0.2in
+\begin{table}[h]
   \centering
   \begin{tabular}{|l|l|}
     \hline
@@ -178,11 +174,11 @@ We wanted to use neural network models to classify authorship, but first we used
 Somewhat dissappointingly, our engineered features performed worse than the TFIDF vectors. We visualize the data to see why this might be. Full size images can be found in Appendix. Some 'count' features have negative values - this is due to a normalization process we performed on all grammatical features to avoid favoring high-valued features:
 
 \begin{quote}
-$ standard(x_i) = \frac{x - \bar{x}}{stdev(x)} $
+$ normalize(x_i) = \frac{x - \bar{x}}{stdev(x)} $
 \end{quote}
 
 where $x$ is a column and $x_i$ is a single instance.
-
+\vskip 0.2in
 \begin{figure}[h]
   \begin{multicols}{3}
       \includegraphics[width=\linewidth]{images/punc_mws.png}\par\caption{MWS}
@@ -190,53 +186,171 @@ where $x$ is a column and $x_i$ is a single instance.
       \includegraphics[width=\linewidth]{images/punc_eap.png}\par\caption{EAP}
   \end{multicols} 
 
-   
   \caption{Authorwise comparison of punctuation frequencies (normalized)}
   \label{fig:punc}
 
 \end{figure}
 
 We observe that there punctuation counts are surprisingly consistent across all three authors, which explains why these features did not improve classification.
+\vskip 0.2in
+\begin{figure}[h]
+  \begin{multicols}{3}
+      \includegraphics[width=\linewidth]{images/ratio_mws.png}\par\caption{MWS}
+      \includegraphics[width=\linewidth]{images/ratio_hpl.png}\par\caption{HPL}
+      \includegraphics[width=\linewidth]{images/ratio_eap.png}\par\caption{EAP}
+  \end{multicols} 
+
+  \caption{Authorwise comparison of ratio frequencies \& sentence lengths (normalized)}
+  \label{fig:punc}
+
+\end{figure}
+
+Likewise with ratio features and sentence length: the pattern looks similar across the three authors. EAP and MWS have higher adverb-verb variance than HPL, but the means are not substantially different.
 
 
-\section{Implementation}
+\begin{figure}[h]
+  \begin{multicols}{3}
+      \includegraphics[width=\linewidth]{images/tag_mws.png}\par\caption{MWS}
+      \includegraphics[width=\linewidth]{images/tag_hpl.png}\par\caption{HPL}
+      \includegraphics[width=\linewidth]{images/tag_eap.png}\par\caption{EAP}
+  \end{multicols} 
 
-\section{Analysis}
-\subsection{Error Analysis}
+  \caption{Authorwise comparison of POS frequencies (normalized)}
+  \label{fig:punc}
 
-\section{Future Work}
-sequential, language models, LSTM
+\end{figure}
 
-\section{Appendix}
+The distributions of parts-of-speech are quite similar across authors as well. Adjective and adverb frequences vary more than the other parts-of-speech, but not by much.
 
-asdf
-
-1 https://ieeexplore.ieee.org/abstract/document/1512002 Abbasi
-
-Bagnall https://www.uni-weimar.de/medien/webis/events/pan-16/pan16-papers-final/pan16-author-identification/bagnall16-notebook.pdf
-
-Brennan: https://www.aaai.org/ocs/index.php/IAAI/IAAI09/paper/viewFile/257/1017
-
-Hearst http://people.ischool.berkeley.edu/~hearst/papers/coling92.pdf
-
-Mikolov: https://arxiv.org/pdf/1301.3781.pdf
+We can attempt to explain the engineered feature performances in three ways: 1) the engineered features, although guided by domain knowledge, are poor in carrying the signal of authorship; other, untried features should be used. 2) The corpora come from similar distributions, so there is not much signal to be noticed. 3) The LinearSVC classifier is not properly configured.
 
 
+\section{NN Implementation \& Results}
+After using a preliminary linear classifier for exploration, we construct 3 feedforward neural network classifiers. Each final layer was a 3-class softmax activation.
+  \vskip 0.2in
+  \begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|l|l|l|}
+      \hline
+      name & algorithm & dense layers & activation & regularization & loss \\
+      \hline
+      NN1 & RMS & 3 & ReLU & none & cat. crossentropy    \\
+      NN2 & RMS & 5 & ReLU & l1, l2 & cat. crossentropy    \\
+      NN3 & Grad. Descent & 5 & ReLU & l1, l2 & cat. crossentropy    \\
+      \hline
+    \end{tabular}
+    \caption{NN models}
+    \label{tab:nn_desc}
+  \end{table}
 
-\section{Dense Vector Representations}
+Although the linear classifier performed poorly on most of the engineered features, we introduce them into this section, since we hypothesize that, not being confined to a linear decision boundary, the NN may be able to extract more signal from them. 
 
+Since running a grid search on every combination of 1623 features is intractible, we group them logically into:
 
+\begin{quote}
+  gram: 23 grammatical features, 1600 sequential one-hot POS features\\
+  tfidf: 1500 TFIDF features\\
+  gensim: 1500 gensim features\\
+\end{quote}
 
-\begin{table}[!h]
-\centering
-\begin{tabular}{l|l|l|l|l}
-Dense Model	& KMeans	& Spectral		& Agglomerative	& Birch \\
-\hline
-SVD			& 0.3298	& 0.3165		& 0.3569			& 0.3076 \\
-\end{tabular}
-\caption{Paired F-Score on the dev set by different dense vector space models and clustering algorithms.}
-\label{tab:denseresults}
+We established a baseline model using NN1 and all four feature groups. Then, we retrain from scratch, leaving one feature group out each time.
+\vskip 0.2in
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|l|l|}
+    \hline
+    Featureset  & Val. set accuracy \\
+    \hline
+    all      & .707 \\
+      - gram  & \textbf{.729} \\
+      - tfidf & .553 \\
+      - gensim  & .703 \\
+    \hline
+  \end{tabular}
+  \caption{NN1 accuracy with various featuresets, epoch=10}
+  \label{tab:nn1-featuresets}
 \end{table}
+\vskip 0.2in
+Keeping the best featureset combination constant (all - gram), we retrained NN1 with different epochs:
+
+
+\includegraphics[scale=.45, center]{images/epochs.png}
+
+No significant increase in accuracy was gained when increasing the number of epochs. Multiple runs of with the same NN configuration resulted in an accuracy variance of roughly 1\%.
+
+These are our NN model results in their best configurations:
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|l|l|}
+    \hline
+    name & Val. set accuracy \\
+    \hline
+    NN1      & .729 \\
+    NN2      & \textbf{.732} \\
+    NN3      & .585 \\
+    \hline
+  \end{tabular}
+  \caption{NN1 accuracy with various featuresets, epoch=10}
+  \label{tab:nn-results}
+\end{table}
+
+
+
+\section{Error Analysis}
+NN2 performed the best with 73.2\% accuracy. The added regularized layers controlled the final weight matrix such that it slightly outperformed its counterparts. Hold-out test set accuracy was only slightly lower, at 72.0\%.
+
+As mentioned in the previous section, overfit was not a serious problem for the neural classifiers. Mispredictions occurred fairly evenly between classes, although NN2's most common problem was misclassifying HPL as EAP. Literature fans may find this somewhat surprising, since, Lovecraft and Poe were both American, while Shelley was English.
+
+% Poe January 19, 1809 – October 7, 1849), boston
+% Shelley  30 August 1797 – 1 February 1851) London
+% Lovecraft (August 20, 1890 – March 15, 1937) rhode island
+
+\includegraphics[scale=.45, center]{images/conf_mat.png}
+
+In this project, we focused on feedforward neural networks. Recurrent and convolutional neural networks have shown promising results [Hu]. Many of our intuitions about feature engineering did not lead to appreciable improvements in the core metric.
+
+
+%sequential, language models, LSTM
+
+\section{Bibliography}
+
+
+[Abbasi] Applying authorship analysis to extremist-group Web forum messages. \url{https://ieeexplore.ieee.org/abstract/document/1512002} \\ \\
+
+[Bagnall] Authorship clustering using multi-headed recurrent
+neural networks. \url{https://www.uni-weimar.de/medien/webis/events/pan-16/pan16-papers-final/pan16-author-identification/bagnall16-notebook.pdf}\\ \\
+
+[Brennan] Practical Attacks Against Authorship Recognition Techniques. \url{https://www.aaai.org/ocs/index.php/IAAI/IAAI09/paper/viewFile/257/1017}\\ \\
+
+[Hearst] Automatic Acquisition of Hyponyms
+from Large Text Corpora. \url{http://people.ischool.berkeley.edu/~hearst/papers/coling92.pdf}\\ \\
+
+[Hu] Convolutional Neural Network Architectures for
+Matching Natural Language Sentences. \url{http://papers.nips.cc/paper/5550-convolutional-neural-network-architectures-for-matching-natural-language-sentences.pdf}\\ \\
+
+
+[Mikolov] Efficient Estimation of Word Representations in
+Vector Space. \url{https://arxiv.org/pdf/1301.3781.pdf}
+
+
+
+
+\section{Appendix - Full-size plots}
+
+\subsection{Punctuation Frequencies: MWS, HPL, EAP}
+\includegraphics[scale=.50, center]{images/punc_mws.png}
+\vskip 0.2in
+\includegraphics[scale=.50, center]{images/punc_hpl.png}
+\vskip 0.2in
+\includegraphics[scale=.50, center]{images/punc_eap.png}
+
+\subsection{Ratios \& Sentence Length: MWS, HPL, EAP}
+\includegraphics[scale=.50, center]{images/ratio_mws.png}
+\vskip 0.2in
+\includegraphics[scale=.50, center]{images/ratio_hpl.png}
+\vskip 0.2in
+\includegraphics[scale=.50, center]{images/ratio_eap.png}
 
 
 
