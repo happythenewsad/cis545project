@@ -2,3 +2,6 @@ data
 **/*/__pycache*
 .ipynb_checkpoints
 notes.txt
+docs/writeup.aux
+docs/writeup.log
+docs/writeup.synctex.gz
