@@ -9,6 +9,8 @@
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{hyperref}
 \usepackage[export]{adjustbox}
+\usepackage{subcaption}
+\usepackage{lipsum,multicol}
 
 \title{CIS 545 - Final Project}
 \author{Peter Kong}
@@ -152,7 +154,50 @@ stdev: 1.2\\
 \end{quote}
 
 
-\section{Exploration B}
+\section{Intermediate results}
+We wanted to use neural network models to classify authorship, but first we used a simple linear classifier (\texttt{sklearn.LinearSVC}) as a way of quickly determining the value of our engineered features.
+
+\begin{table}[]
+  \centering
+  \begin{tabular}{|l|l|}
+    \hline
+    Featureset  & Val. set accuracy \\
+    \hline
+    TFIDF      & \textbf{.558} \\
+    TFIDF + 23 grammatical      & .549 \\ 
+    23 grammatical      & .403 \\    
+    23 grammatical + 1600 seq     & .396 \\  
+    gensim (100)      & .447 \\  
+    \hline
+  \end{tabular}
+  \caption{LinearSVC accuracy with various featuresets}
+  \label{tab:sparseresults}
+\end{table}
+
+\section{Further Exploration and Data Visualization}
+Somewhat dissappointingly, our engineered features performed worse than the TFIDF vectors. We visualize the data to see why this might be. Full size images can be found in Appendix. Some 'count' features have negative values - this is due to a normalization process we performed on all grammatical features to avoid favoring high-valued features:
+
+\begin{quote}
+$ standard(x_i) = \frac{x - \bar{x}}{stdev(x)} $
+\end{quote}
+
+where $x$ is a column and $x_i$ is a single instance.
+
+\begin{figure}[h]
+  \begin{multicols}{3}
+      \includegraphics[width=\linewidth]{images/punc_mws.png}\par\caption{MWS}
+      \includegraphics[width=\linewidth]{images/punc_hpl.png}\par\caption{HPL}
+      \includegraphics[width=\linewidth]{images/punc_eap.png}\par\caption{EAP}
+  \end{multicols} 
+
+   
+  \caption{Authorwise comparison of punctuation frequencies (normalized)}
+  \label{fig:punc}
+
+\end{figure}
+
+We observe that there punctuation counts are surprisingly consistent across all three authors, which explains why these features did not improve classification.
+
 
 \section{Implementation}
 
@@ -176,17 +221,7 @@ Hearst http://people.ischool.berkeley.edu/~hearst/papers/coling92.pdf
 
 Mikolov: https://arxiv.org/pdf/1301.3781.pdf
 
-\begin{table}[]
-\centering
-\begin{tabular}{l|l|l|l|l}
-Vector Space Model	& KMeans	& Spectral		& Agglomerative	& Birch \\
-\hline
-500vec			& 0.3662	& 0.2876		& 0.3748			& 0.3649 \\
-1000vec			& 0.3661	& 0.2739		& 0.3727			& 0.3652 \\        
-\end{tabular}
-\caption{Paired F-Score on the dev set by different vector space models and clustering algorithms.}
-\label{tab:sparseresults}
-\end{table}
+
 
 \section{Dense Vector Representations}
 
