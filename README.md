@@ -12,6 +12,22 @@ You'll also need to download the [dataset](https://www.kaggle.com/c/spooky-autho
 - To run unit tests: ```$ python3 run_tests.py```
 
 
+System requirements
+===================
+
+- python 3.6+
+- jupyter
+
+package requirements:
+--------------------
+
+pip install nltk
+pip install spacy
+pip install gensim
+python3 -m spacy download en
+
+
+
 
 
 
