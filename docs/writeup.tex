@@ -19,13 +19,67 @@
 
 \hrulefill
 
-\section{Introduction}
-\subsection{Problem Domain}
-\subsection{Problem Description}
+\section{Abstract} We attack an existing authorship identification task, focusing on textual feature extraction paired with exploration in feedforward neural network classifiers.
+
+\section{Problem Background}
+Authorship identification is the task of identifying the authorship of a document, usually by textual analysis. This task has significant real world applications: it can be used to attribute authorship to historical documents whose provenance is disputed.
+
+Many authors, with good or bad intentions, attempt to frustrate identification via various methods, including style modification [Brennan]. Helping hide or reveal authorship of text can save a life or solve a crime, depending on the context.
+
+Authorship identification and its analog tasks are studied heavily in academia. PAN, a digital forensics conference, holds an authorship identification-related task every year. 
+
+
+
+
+\section{Problem Description}
+The Spooky Author Identification task is hosted by Kaggle. It is a supervised learning problem. Training data is given as tuples of (text, label), where 'text' is a one-sentence excerpt from an author's corpus, and 'label' is one of Edgar Allen Poe, H. P. Lovecraft, and Mary Wollstonecraft Shelley.
+
+The official task tracks logless as its only metric:
+\vskip 0.3in
+\centerline{logloss = $-\frac{1}{N}\Sigma^N_{i=1}\Sigma^M_{j=1}y_{ij}log(p_{ij})$} 
+
+where $M$ are the authorship classes and $y_{ij}$ is 1 if the prediction is true and 0 if it is not.
+
+We decided to focus instead on matching-class accuracy: 
+\vskip 0.3in
+\centerline{accuracy = $\frac{1}{N}\Sigma^N_{i=1}\Sigma^M_{j=1}\textbf{1}y_{ij}$}
+
+Our motivation was 2-fold: 1) in a real-world setting, probabilistic classification may be less useful than binary, 2) accuracy was a metric that all of our models could generate.
+
+It should be noted that academic research tends to use mean-averaged precision as the primary metric. Example: [Bagnall].
 
 \section{Data Acquisition \& Preparation}
+This is a managed task, so data acquisition was straightforward. We downloaded the training data in csv format. It is comprised of 19479 rows, including gold label.
+
+According to convention, we split the training data into three sets:
+15664 rows of training data
+1958 rows of validation data
+1857 rows of holdout/test data
+
+The only data wrangling necessary was a check for null values across all columns, which returned negative. We computed simple statistics across each column to check for oddities like empty sentences or out-of-vocabulary labels.
+
 
 \section{Exploration}
+% Poe January 19, 1809 – October 7, 1849), boston
+% Shelley  30 August 1797 – 1 February 1851) London
+% Lovecraft (August 20, 1890 – March 15, 1937) rhode island
+
+Here are three examples of sentences from the three authors:
+
+mws: 'How lovely is spring As we looked from Windsor Terrace on the sixteen fertile counties spread beneath, speckled by happy cottages and wealthier towns, all looked as in former years, heart cheering and fair.'
+
+'It never once occurred to me that the fumbling might be a mere mistake.'
+
+'This process, however, afforded me no means of ascertaining the dimensions of my dungeon; as I might make its circuit, and return to the point whence I set out, without being aware of the fact; so perfectly uniform seemed the wall.'
+
+Can you attribute each passage? You probably cannot, unless you are intimately familiar with the books these sentences are drawn from. We needed to look at much more data to find meaninful patterns.
+
+We first truncated the corpus slightly so that all three authors were equally weighted with 5635 rows each. This avoided data skew without meaningfully descreasing corpus size. 
+
+We used the \texttt{nltk} stopwords list across all experiments in this project, where appropriate.
+
+We wrote a simple tokenizer for this process, which splits on white space and standard punctuation. We ensured that our tokenizer imitated the behavior of sklearn's internal tokenizer, knowing we would probably use \texttt{sklearn.TFIDFVectorizer} later. The lexicon yielded 22847 unique tokens. Next, we generated author-specific lexicons to visualize relative word frequencies.
+
 
 \section{Feature Engineering}
 
@@ -34,19 +88,18 @@
 \section{Analysis}
 \subsection{Error Analysis}
 
-We tried one variation of a sparse vector representation, which expanded the model to the top 1000 (instead of top 500) words.
+\section{Future Work}
+sequential, language models, LSTM
 
-% 500 window 3: Average Paired F-Score:  0.3670
-% with .0001 weighting: 0.3657
-% with .0001 weighting: 0.3646
+\section{Appendix}
 
-%with 1000: .3681
+asdf
 
-% dense, SVD, 200 components (tried 100, same ballpark)
-% .3569
+1 https://ieeexplore.ieee.org/abstract/document/1512002 Abbasi
 
+Bagnall https://www.uni-weimar.de/medien/webis/events/pan-16/pan16-papers-final/pan16-author-identification/bagnall16-notebook.pdf
 
-We compare the impact of our model and clustering choices by evaluating their performance over the dev set (Table \ref{tab:sparseresults}):
+Brennan: https://www.aaai.org/ocs/index.php/IAAI/IAAI09/paper/viewFile/257/1017
 
 \begin{table}[]
 \centering
