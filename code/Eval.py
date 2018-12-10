@@ -7,10 +7,11 @@ class Eval:
         vals = {'correct': 0, 'incorrect': 0}
 
         for idx in range(len(y_pred)):
-            if y_pred[idx] == y_true[idx]:
+            if y_pred[idx].contains(y_true[idx]):
                 vals['correct'] += 1
             else:
                 vals['incorrect'] += 1
+
 
         return vals['correct'] / (vals['correct'] + vals['incorrect'])
 
@@ -18,7 +19,7 @@ class Eval:
     @staticmethod
     def nn_accuracy(classes, preds, Y):
         label_lookup = {}
-        for idx, label in enumerate(encoder.classes_):
+        for idx, label in enumerate(classes):
             label_lookup[idx] = label
         label_lookup
 
@@ -26,7 +27,7 @@ class Eval:
             mx = max(row)
             return lookup[list(row).index(mx)]
 
-        preds = [best_label(x, label_lookup) for x in result]
+        preds = [best_label(x, label_lookup) for x in preds]
 
         accuracy = Eval.get_accuracy(preds, Y)
         print("NN Accuracy: ", accuracy)   

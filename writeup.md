@@ -12,7 +12,7 @@ SVM classifier can act as a validation signal on the preprocessing. we will try 
 
 Results:
 
-tfidf only, 100 feats, svm: Accuracy:  0.8212461695607763
+tfidf only, 100 feats, svm: Accuracy:  0.8212461695607763 (wrong?)
 
 tfidf + 23 grammar, svm: Accuracy:  0.54902962206333
 
@@ -40,3 +40,28 @@ could just punt and let the NN try to use all features correctly
 It may be that the authors have few differentiators - many sentences could plausibly come from distro A or distro B.
 
 tried standardization, improved significantly, but still not great.
+
+
+NN, just text:
+.689
+
+basic NN, all features:
+.707 (.005 variance)
+
+no punc:
+.729 *BEST*
+
+no text:
+.553
+
+no gensim:
+.703
+
+
+validation param seems to have no effect
+
+investigation into epochs:
+20
+e=40
+80
+160
