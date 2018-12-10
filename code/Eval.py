@@ -7,7 +7,7 @@ class Eval:
         vals = {'correct': 0, 'incorrect': 0}
 
         for idx in range(len(y_pred)):
-            if y_pred[idx].contains(y_true[idx]):
+            if y_pred[idx] == y_true[idx]:
                 vals['correct'] += 1
             else:
                 vals['incorrect'] += 1
